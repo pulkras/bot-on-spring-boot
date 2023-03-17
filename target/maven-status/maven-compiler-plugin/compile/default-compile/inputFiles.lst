@@ -1,0 +1,4 @@
+/home/pulkras/github/bot-on-spring-boot/src/main/java/ru/pulkras/botonspringboot/BotOnSpringBootApplication.java
+/home/pulkras/github/bot-on-spring-boot/src/main/java/ru/pulkras/botonspringboot/config/BotConfig.java
+/home/pulkras/github/bot-on-spring-boot/src/main/java/ru/pulkras/botonspringboot/service/TelegramBot.java
+/home/pulkras/github/bot-on-spring-boot/src/main/java/ru/pulkras/botonspringboot/config/BotInitializer.java

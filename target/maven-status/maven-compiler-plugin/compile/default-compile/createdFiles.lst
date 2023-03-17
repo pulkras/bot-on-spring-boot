@@ -1,0 +1,4 @@
+ru/pulkras/botonspringboot/config/BotConfig.class
+ru/pulkras/botonspringboot/BotOnSpringBootApplication.class
+ru/pulkras/botonspringboot/config/BotInitializer.class
+ru/pulkras/botonspringboot/service/TelegramBot.class

@@ -1,5 +1,6 @@
 package ru.pulkras.botonspringboot.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -7,8 +8,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pulkras.botonspringboot.config.BotConfig;
 
-import java.util.List;
 
+@Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
@@ -20,12 +21,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return config.getToken();
+        return config.getKey();
     }
 
     @Override
     public String getBotUsername() {
-        return null;
+        return config.getBotName();
     }
 
     @Override
@@ -47,6 +48,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         String answer = "Hello, " + name + " and welcome to our telegram bot!";
 
+        log.info("replied to user " + name);
+
         sendMessage(chatId, answer);
     }
 
@@ -58,7 +61,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(message);
         } catch(TelegramApiException tae) {
-            throw new RuntimeException(tae);
+            log.error("Error occurrred. " + tae.getMessage());
         }
     }
 }
