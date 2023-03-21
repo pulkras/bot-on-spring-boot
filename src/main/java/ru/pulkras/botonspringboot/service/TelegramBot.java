@@ -1,8 +1,11 @@
 package ru.pulkras.botonspringboot.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -63,7 +66,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     @Override
-    public void onUpdateReceived(Update update) {
+    public void onUpdateReceived(@NotNull Update update) {
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
@@ -82,7 +85,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
 
-    private void userRegistration(Message message) {
+    private void userRegistration(@NotNull Message message) {
         if (userRepository.findById(message.getChatId()).isEmpty()) {
             Long chatId = message.getChatId();
 
