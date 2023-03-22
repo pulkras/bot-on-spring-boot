@@ -1,5 +1,6 @@
 package ru.pulkras.botonspringboot.service;
 
+import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pulkras.botonspringboot.config.BotConfig;
 import ru.pulkras.botonspringboot.model.User;
@@ -38,7 +41,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             "you can press /mydata to get data about yourself\n" +
             "you can press /deletedata to delete data about yourself\n" +
             "you can press /help to see this message))\n" +
-            "or you can press /settings to see current settings or set yours";
+            "you can press /settings to see current settings or set yours\n" +
+            "or you can press /author to see info about author";
+
+    static final String AUTHOR_INFO = "The author is pulkras(Mikhail Malygin). I learn to use new technologies and this is my creation";
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -48,6 +54,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         listOfCommands.add(new BotCommand("/deletedata", "delete data about yourself"));
         listOfCommands.add(new BotCommand("/help", "explaining how to use this bot"));
         listOfCommands.add(new BotCommand("/settings", "see settings or set your preferences"));
+        listOfCommands.add(new BotCommand("/author", "see info about author"));
         try {
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         } catch(TelegramApiException tae) {
@@ -72,14 +79,16 @@ public class TelegramBot extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             switch(messageText) {
                 case "/start":
+                    reactionToStartCommand(chatId, update.getMessage().getChat().getFirstName(), messageText);
                     userRegistration(update.getMessage());
-                    reactionToStartCommand(chatId, update.getMessage().getChat().getFirstName());
                     break;
                 case "/help":
-                    sendMessage(chatId, HELPING_TEXT);
+                    sendMessage(chatId, HELPING_TEXT, messageText);
                     break;
+                case "/author":
+                    sendMessage(chatId, AUTHOR_INFO, messageText);
                 default:
-                    sendMessage(chatId, "Sorry, command was not recognized");
+                    sendMessage(chatId, "Sorry, command was not recognized", messageText);
             }
         }
     }
@@ -103,24 +112,68 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.info("user saved: " + user);
         }
     }
-    private void reactionToStartCommand(long chatId, String name) {
+    private void reactionToStartCommand(long chatId, String name, String command) {
 
-        String answer = "Hello, " + name + " and welcome to our telegram bot!";
+        String answer = EmojiParser.parseToUnicode("Hello, " + name + " and welcome to our telegram bot!" + ":blush:");
 
         log.info("replied to user " + name);
 
-        sendMessage(chatId, answer);
+        sendMessage(chatId, answer, command);
     }
 
-    private void sendMessage(long chatId, String text) {
+    private void sendMessage(long chatId, String text, String command) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
 
+        setKeyboard(message, command);
+
         try {
             execute(message);
-        } catch(TelegramApiException tae) {
+        } catch (TelegramApiException tae) {
             log.error("Error occurrred. " + tae.getMessage());
         }
     }
+    private void setKeyboard(SendMessage message, String command) {
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+
+        row.add("try to use other buttons");
+
+        if (command.equals("/start") || command.equals("/help")) {
+            row.add("click here to see settings");
+
+        }
+        else if(command.equals("/settings")) {
+            row.add("click here to see help message");
+        }
+
+        else if(!command.equals("/author")) {
+                row.add("click me to show info about author");
+        }
+
+        keyboardRows.add(row);
+
+        row = new KeyboardRow();
+
+        row.add("check my data");
+        row.add("delete my data");
+
+        keyboardRows.add(row);
+        
+        row = new KeyboardRow();
+
+        row.add("register or sign in");
+        row.add("write @pulkras to ask your question");
+
+        keyboardRows.add(row);
+
+        keyboardMarkup.setKeyboard(keyboardRows);
+
+        message.setReplyMarkup(keyboardMarkup);
+    }
 }
+
